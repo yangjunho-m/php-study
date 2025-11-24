@@ -2,7 +2,10 @@ https://infognu.ansan.ac.kr/~i2251014/WebDB2025/display.php#  <br><br>
 
 php 와 웹DB를 사용하여 웹사이트를 제작하였습니다.<br>
 
-<img width="704" height="605" alt="image" src="https://github.com/user-attachments/assets/0631d177-f3ea-4282-8b97-1f365c284aa3" /> <br><br>
+<img width="704" height="605" alt="image" src="https://github.com/user-attachments/assets/0631d177-f3ea-4282-8b97-1f365c284aa3" /> <br>
+
+<img width="950" height="653" alt="image" src="https://github.com/user-attachments/assets/bb2af4f9-c5d6-4c1c-8c98-ac2ef9697786" /> <br>
+
 
 display.php   -  메인페이지<br>
 
