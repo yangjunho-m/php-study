@@ -86,7 +86,7 @@ h2 {
 /* 여행지 카드 스타일 */
 .card-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 25px;
     margin-top: 30px;
 }

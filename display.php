@@ -6,7 +6,7 @@ session_start();
 require_once 'conf/db_config.php';
 
 // 페이지네이션 설정
-$items_per_page = 10; // 페이지당 항목 수
+$items_per_page = 8; // 페이지당 항목 수
 $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($current_page - 1) * $items_per_page;
 
@@ -95,23 +95,38 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
         </div>
 
         <div id="add-travel-section" class="section">
-            <form id="add-travel-form" class="form-card">
+            <form id="add-travel-form" class="form-card" enctype="multipart/form-data">
                 <h2>여행지 추가</h2>
+                <p>여행지</p>
                 <input type="text" id="add-title" name="add_title" placeholder="여행지 제목" required>
-                <input type="text" id="add-image" name="add_image" placeholder="이미지 URL" required>
+                <p>새 이미지 파일</p>
+                <input type="file" id="add-image" name="add_image" placeholder="이미지 파일" required>
+                <p>설명</p>
                 <textarea id="add-description" name="add_description" placeholder="설명" rows="4" required></textarea>
                 <button type="submit">추가하기</button>
             </form>
         </div>
 
-        <div id="modify-travel-section" class="section">
-            <form id="modify-travel-form" class="form-card">
+        <div id="modify-travel-section" class="section active">
+            <form id="modify-travel-form" class="form-card" action="updateProcess.php" method="POST" enctype="multipart/form-data"> 
                 <h2>여행지 수정</h2>
-                <input type="hidden" id="modify-id" name="modify_id">
+                <input type="hidden" id="modify-id" name="modify_id" value="">
+                
+                <input type="hidden" name="original_image" value="">
+                
+                <p>여행지 제목</p>
                 <input type="text" id="modify-title" name="modify_title" placeholder="여행지 제목" required>
-                <input type="text" id="modify-image" name="modify_image" placeholder="이미지 URL" required>
-                <textarea id="modify-description" name="modify_description" placeholder="설명" rows="4" required></textarea>
+                
+                <p>이미지 첨부 (새 파일)</p>
+                <input type="file" id="modify-image-file" name="modify_image_file" accept="image/*">
+                <small>(새 파일을 첨부하지 않으면 기존 이미지가 유지됩니다.)</small>
+                
+                <p>설명</p>
+                <textarea id="modify-description" name="modify_description" 
+                        placeholder="설명" rows="4" required></textarea>
+                
                 <button type="submit">수정 완료</button>
+                <button type="button" onclick="window.location.href='display.php'">취소</button>
             </form>
         </div>
     </main>
@@ -129,12 +144,13 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
             const signupForm = document.getElementById('signup-form');
             const travelDestinations = JSON.parse(JSON.stringify(<?php echo $travel_data_json; ?>));
             let currentPage = <?php echo $current_page_js; ?>; 
-            const itemsPerPage = 10; 
+            const itemsPerPage = 8; 
             const totalPages = <?php echo $total_pages_js; ?>;
 
             
             const loggedInUserId = <?php echo isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0; ?>;
             const loggedInUserName = "<?php echo isset($_SESSION['user_name']) ? htmlspecialchars($_SESSION['user_name']) : ''; ?>";
+            showSection('travel-list-section');
             
             function showSection(sectionId) {
                 sections.forEach(section => {
@@ -186,7 +202,7 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
                 if (totalPages > 1) {
                     for (let i = 1; i <= totalPages; i++) {
                         const btn = document.createElement('a');
-                        btn.href = `index.php?page=${i}`;
+                        btn.href = `display.php?page=${i}`;
                         btn.textContent = i;
                         
                         btn.addEventListener('click', (e) => {});
@@ -216,10 +232,12 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
             // 여행지 추가 기능
             addTravelForm.addEventListener('submit', (e) => {
                 e.preventDefault();
+                /*
                 const title = document.getElementById('add-title').value;
                 const image = document.getElementById('add-image').value;
                 const description = document.getElementById('add-description').value;
                 const newId = Date.now();
+                */
                 const formData = new FormData(addTravelForm);
                  
                 fetch('travel_process.php', {
@@ -243,12 +261,26 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
             });
 
             // 여행지 수정 기능
+
+            function openModifyModal(item) {
+                document.getElementById('modify-id').value = item.id;
+                document.getElementById('modify-title').value = item.title;
+                
+                // 💡 수정된 부분: 기존 이미지 경로를 hidden 필드에 저장
+                document.getElementById('original-image').value = item.img; 
+                document.getElementById('current-image-name').textContent = item.img.split('/').pop(); // 파일명만 표시
+                
+                // 파일 첨부 필드는 .value를 설정할 수 없으므로 건드리지 않습니다.
+                document.getElementById('modify-description').value = item.description;
+                
+                showSection('modify-travel-section');
+            }   
             modifyTravelForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const formData = new FormData(modifyTravelForm);
-                formData.append('action', 'modify');
+                //formData.append('action', 'modify');
 
-                fetch('travel_process.php', {
+                fetch('updateProcess.php', {
                     method: 'POST',
                     body: formData
                 })
@@ -269,7 +301,7 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
                     alert('여행지 수정 처리 중 오류가 발생했습니다.');
                     location.reload();
                 });
-
+                /*
                 const itemToUpdate = travelDestinations.find(item => item.id === id); // 🚨 'id' is not defined
                 if (itemToUpdate) {
                     itemToUpdate.title = title;
@@ -281,6 +313,7 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
                 renderPagination(); 
                 modifyTravelForm.reset();
                 showSection('travel-list-section');
+                */
             });
 
             // 수정 및 삭제 기능 (이벤트 위임)
@@ -323,7 +356,7 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
                     if (itemToEdit && parseInt(itemToEdit.user_id) === loggedInUserId) {
                         document.getElementById('modify-id').value = itemToEdit.id;
                         document.getElementById('modify-title').value = itemToEdit.title;
-                        document.getElementById('modify-image').value = itemToEdit.img;
+                        //document.getElementById('modify-image').value = itemToEdit.img;
                         document.getElementById('modify-description').value = itemToEdit.description;
                         showSection('modify-travel-section');
                     } else {
