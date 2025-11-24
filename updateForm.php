@@ -1,42 +1,43 @@
 <?php
-session_start();
-require_once 'conf/db_config.php';
 
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    // ID가 없거나 유효하지 않으면 목록 페이지로 리다이렉트
-    header("Location: display.php");
-    exit;
-}
+    // 수정 폼 기능
 
-$travel_id = (int)$_GET['id'];
-$travel_item = null;
+    session_start();
+    require_once 'conf/db_config.php';
 
-// 2. 로그인 사용자 ID 확인
-$logged_in_user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
-
-try {
-    // 3. 해당 ID의 여행지 정보 조회
-    $sql = "SELECT t_id, user_id, title, img_url, description FROM travel WHERE t_id = :id";
-    $stmt = $pdo->prepare($sql);
-    $stmt->bindParam(':id', $travel_id, PDO::PARAM_INT);
-    $stmt->execute();
-    $travel_item = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    // 4. 항목이 존재하지 않거나, 작성자 본인이 아닌 경우 권한 검사
-    if (!$travel_item) {
-        echo "<script>alert('존재하지 않는 여행지입니다.'); window.location.href='display.php';</script>";
+    if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+        header("Location: display.php");
         exit;
     }
 
-    if ((int)$travel_item['user_id'] !== $logged_in_user_id) {
-        echo "<script>alert('수정 권한이 없습니다.'); window.location.href='display.php';</script>";
+    $travel_id = (int)$_GET['id'];
+    $travel_item = null;
+    $logged_in_user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
+
+    try {
+        // 해당 ID의 여행지 정보 조회
+        $sql = "SELECT t_id, user_id, title, img_url, description FROM travel WHERE t_id = :id";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(':id', $travel_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $travel_item = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // 4. 항목이 존재하지 않거나, 작성자 본인이 아닌 경우 권한 검사
+        if (!$travel_item) {
+            echo "<script>alert('존재하지 않는 여행지입니다.'); window.location.href='display.php';</script>";
+            exit;
+        }
+
+        if ((int)$travel_item['user_id'] !== $logged_in_user_id) {
+            echo "<script>alert('수정 권한이 없습니다.'); window.location.href='display.php';</script>";
+            exit;
+        }
+
+    } 
+    catch (PDOException $e) {
+        echo "여행지 로딩 오류: " . $e->getMessage();
         exit;
     }
-
-} catch (PDOException $e) {
-    echo "여행지 로딩 오류: " . $e->getMessage();
-    exit;
-}
 ?>
 
 <!DOCTYPE html>

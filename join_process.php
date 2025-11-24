@@ -1,14 +1,15 @@
 <?php
-// 세션을 시작하여 로그인 상태를 관리합니다.
-session_start();
 
-// 데이터베이스 설정 파일 포함
+// 로그인 및 회원가입
+
+session_start();
 require_once 'conf/db_config.php';
 
 header('Content-Type: application/json'); // JSON 응답을 명시합니다.
 
 // POST 요청인지 확인
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
     // === 회원가입 로직 ===
     if (isset($_POST['signup_name']) && isset($_POST['signup_id']) && isset($_POST['signup_pw'])) {
         
@@ -32,6 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
     } 
+
     // === 로그인 로직 ===
     else if (isset($_POST['login_id']) && isset($_POST['login_pw'])) {
         
@@ -56,11 +58,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } catch (PDOException $e) {
             echo json_encode(['status' => 'error', 'message' => '로그인 실패: ' . $e->getMessage()]);
         }
-    } else {
-        echo json_encode(['status' => 'error', 'message' => '잘못된 접근입니다.']);
-    }
+    } 
+    
+    else { echo json_encode(['status' => 'error', 'message' => '잘못된 접근입니다.']);}
 
-} else {
+} 
+else {
     // POST 요청이 아닐 경우
     header('Location: index.php');
     exit();

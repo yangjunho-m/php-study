@@ -1,12 +1,12 @@
 <?php
-// 세션을 시작하여 로그인 상태를 유지합니다.
-session_start();
 
-// 데이터베이스 설정 파일 포함
-require_once 'conf/db_config.php';
+// 메인 페이지
+
+session_start();
+require_once 'conf/db_config.php';  //데이터베이스 설정파일
 
 // 페이지네이션 설정
-$items_per_page = 8; // 페이지당 항목 수
+$items_per_page = 8; 
 $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($current_page - 1) * $items_per_page;
 
@@ -33,7 +33,6 @@ try {
     $travel_destinations = $stmt->fetchAll();
 
 } catch (PDOException $e) {
-    // 데이터베이스 오류 처리 (선택 사항)
      echo "여행지 로딩 오류: " . $e->getMessage();
 }
 
@@ -133,7 +132,6 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // DOM 요소 선택
             const sections = document.querySelectorAll('.section');
             const navLinks = document.querySelectorAll('nav a');
             const travelCardsContainer = document.getElementById('travel-cards-container');
@@ -162,7 +160,6 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
                 }
             }
 
-            // index.php의 renderCards 함수 전체를 이 코드로 교체하세요.
             function renderCards() {
                 travelCardsContainer.innerHTML = ''; 
                 travelDestinations.forEach(item => { 
@@ -172,7 +169,7 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
                         
                     const newCard = document.createElement('div');
                     newCard.classList.add('card');
-                    newCard.dataset.id = item.id; // item.id 사용 (t_id가 id로 alias됨)
+                    newCard.dataset.id = item.id; 
 
                     const isAuthor = (parseInt(item.user_id) === loggedInUserId);
                     const buttonHtml = isAuthor ? `
@@ -181,8 +178,6 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
                             <button class="delete-btn">삭제</button>
                         </div>
                     ` : '';
-
-                    // 3. HTML 전체를 한 번에 할당
                     newCard.innerHTML = `
                         <img src="${item.img}" alt="${item.title}"> 
                         <div class="card-content">
@@ -195,7 +190,6 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
                     travelCardsContainer.appendChild(newCard);
                 });
             }
-            // 페이지네이션 렌더링 함수
             function renderPagination() {
                 paginationControls.innerHTML = '';
 
@@ -211,11 +205,9 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
                 }
             }
 
-            // 초기 화면 로드
             renderCards(); 
             renderPagination();
 
-            // 내비게이션 링크 클릭 이벤트
             navLinks.forEach(link => {
                 link.addEventListener('click', (e) => {
                     if (e.target.id === 'logout-link') {
@@ -232,12 +224,6 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
             // 여행지 추가 기능
             addTravelForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                /*
-                const title = document.getElementById('add-title').value;
-                const image = document.getElementById('add-image').value;
-                const description = document.getElementById('add-description').value;
-                const newId = Date.now();
-                */
                 const formData = new FormData(addTravelForm);
                  
                 fetch('travel_process.php', {
@@ -261,16 +247,11 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
             });
 
             // 여행지 수정 기능
-
             function openModifyModal(item) {
                 document.getElementById('modify-id').value = item.id;
                 document.getElementById('modify-title').value = item.title;
-                
-                // 💡 수정된 부분: 기존 이미지 경로를 hidden 필드에 저장
                 document.getElementById('original-image').value = item.img; 
-                document.getElementById('current-image-name').textContent = item.img.split('/').pop(); // 파일명만 표시
-                
-                // 파일 첨부 필드는 .value를 설정할 수 없으므로 건드리지 않습니다.
+                document.getElementById('current-image-name').textContent = item.img.split('/').pop();         
                 document.getElementById('modify-description').value = item.description;
                 
                 showSection('modify-travel-section');
@@ -278,7 +259,6 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
             modifyTravelForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const formData = new FormData(modifyTravelForm);
-                //formData.append('action', 'modify');
 
                 fetch('updateProcess.php', {
                     method: 'POST',
@@ -301,19 +281,6 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
                     alert('여행지 수정 처리 중 오류가 발생했습니다.');
                     location.reload();
                 });
-                /*
-                const itemToUpdate = travelDestinations.find(item => item.id === id); // 🚨 'id' is not defined
-                if (itemToUpdate) {
-                    itemToUpdate.title = title;
-                    itemToUpdate.img = image; 
-                    itemToUpdate.description = description; 
-                }
-
-                renderCards(currentPage); // 클라이언트 배열로 카드 다시 그리기
-                renderPagination(); 
-                modifyTravelForm.reset();
-                showSection('travel-list-section');
-                */
             });
 
             // 수정 및 삭제 기능 (이벤트 위임)
@@ -328,7 +295,7 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
                         const formData = new FormData();
                         formData.append('delete_id', cardId); // 삭제할 ID 전달
                         
-                        fetch('travel_process.php', {
+                        fetch('delete.php', {
                             method: 'POST',
                             body: formData
                         })
@@ -356,7 +323,6 @@ $logged_in_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
                     if (itemToEdit && parseInt(itemToEdit.user_id) === loggedInUserId) {
                         document.getElementById('modify-id').value = itemToEdit.id;
                         document.getElementById('modify-title').value = itemToEdit.title;
-                        //document.getElementById('modify-image').value = itemToEdit.img;
                         document.getElementById('modify-description').value = itemToEdit.description;
                         showSection('modify-travel-section');
                     } else {
