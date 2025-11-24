@@ -1,6 +1,6 @@
 <?php
 
-    // 수정 폼 기능
+// 수정 폼 기능
 
     session_start();
     require_once 'conf/db_config.php';
