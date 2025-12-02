@@ -1,4 +1,7 @@
 <?php
+
+// 삭제 기능
+
     session_start();
     require_once 'conf/db_config.php';
 
